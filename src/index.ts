@@ -8,8 +8,9 @@ logger.info(`Support enabled for sites: [${sites.map(s => s.host).join(", ")}]`)
 
 const server = createServer((req, res) => {
     try {
-        if (req.url?.match('^/.+/rss.xml$')) {
-            const site = req.url.substring(1, req.url.lastIndexOf("/"));
+        if (req.url?.match('^/.+/rss\\.xml$')) {
+            logger.info("Handling request for url " + req.url.toString());
+            const site = decodeURI(req.url.substring(1, req.url.lastIndexOf("/")));
             if (!URL.canParse(site)) {
                 res.writeHead(StatusCodes.BAD_REQUEST, {"content-type": "text/html"})
                     .write("Site could not be parsed.");
@@ -24,7 +25,10 @@ const server = createServer((req, res) => {
             }
 
             generateXml(url).then((posts) => {
-                res.writeHead(StatusCodes.OK, {"content-type": "application/rss+xml"})
+                res.writeHead(StatusCodes.OK, {
+                    "content-type": "application/rss+xml",
+                    "content-disposition": "inline; filename=\"rss.xml\""
+                })
                     .write(posts);
                 res.end();
             }).catch((error) => {
@@ -34,6 +38,21 @@ const server = createServer((req, res) => {
                     .write("Error 500: " + error.message);
                 res.end();
             });
+        } else if (req.url?.match('^/.+/rss$')) {
+            res.writeHead(StatusCodes.MOVED_TEMPORARILY, {
+                'location': req.url + ".xml"
+            });
+            res.end();
+        } else if (req.url?.endsWith('/')) {
+            res.writeHead(StatusCodes.MOVED_TEMPORARILY, {
+                'location': req.url + "rss.xml"
+            });
+            res.end();
+        } else if (!req.url?.endsWith('/')) {
+            res.writeHead(StatusCodes.MOVED_PERMANENTLY, {
+                'location': req.url + '/'
+            });
+            res.end();
         } else {
             res.writeHead(StatusCodes.NOT_FOUND, {"content-type": "text/html"})
                 .write("404 not found.");

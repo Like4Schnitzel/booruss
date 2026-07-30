@@ -1,8 +1,16 @@
 import { parse } from "node-html-parser";
 import { publicHost } from "./env";
 import { MILISECONDS_PER_SECOND } from "./consts";
+import { logger } from "./logger";
+
+function encodeXML(str: string) {
+    return str.replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
 
 export async function generateXml(url: URL): Promise<string> {
+    logger.info("Generating XML for url " + url.toString());
     const apiUrl = new URL("https://" + url.host);
     apiUrl.pathname = url.pathname;
     apiUrl.searchParams.set("page", "dapi");
@@ -22,9 +30,9 @@ export async function generateXml(url: URL): Promise<string> {
     let xml = `<?xml version="1.0" encoding="utf-8"?>
     <feed xmlns="http://www.w3.org/2005/Atom">
     <title>%feedTitle</title>
-    <link href="https://${publicHost}/rss.xml" rel="self"/>
+    <link href="https://${publicHost}/${encodeXML(url.toString())}/rss.xml" rel="self"/>
     <link href="https://${url.host}"/>
-    <id>${url.toString()}</id>
+    <id>${encodeXML(url.toString())}</id>
     <author>
       <name>%author</name>
     </author>
@@ -63,8 +71,8 @@ export async function getPostEntries(apiUrl: URL): Promise<string> {
             const fileUrl = post.getAttribute("file_url");
             return `<entry>
             <title>${id}</title>
-            <link href="${postLink}" />
-            <id>${postLink}</id>
+            <link href="${encodeXML(postLink)}" />
+            <id>${encodeXML(postLink)}</id>
             <updated>${updated.toISOString()}</updated>
             <published>${published}</published>
             <content type="html"><![CDATA[<img src="${fileUrl}" />]]></content>
