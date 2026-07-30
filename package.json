@@ -1,0 +1,30 @@
+{
+  "name": "booruss",
+  "version": "0.1.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "booruss"
+  },
+  "license": "ISC",
+  "author": "like4schnitzel",
+  "type": "module",
+  "scripts": {
+    "main": "npx tsx ./src/index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "http-status-codes": "^2.3.0",
+    "node-html-parser": "^9.0.1",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "globals": "^17.8.0",
+    "jiti": "^2.7.0",
+    "typescript-eslint": "^8.65.0"
+  }
+}

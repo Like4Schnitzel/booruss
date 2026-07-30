@@ -1,0 +1,1 @@
+export const MILISECONDS_PER_SECOND = 1000;
