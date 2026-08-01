@@ -1,6 +1,6 @@
 import { parse } from "node-html-parser";
 import { publicHost, tagDisallowList } from "./env";
-import { MILISECONDS_PER_SECOND } from "./consts";
+import { MILISECONDS_PER_SECOND, VIDEO_ENDINGS } from "./consts";
 import { logger } from "./logger";
 
 function encodeXML(str: string) {
@@ -77,13 +77,25 @@ export async function getPostEntries(apiUrl: URL): Promise<string> {
             const updated = new Date(parseInt(post.getAttribute("change")!) * MILISECONDS_PER_SECOND);
             const published = post.getAttribute("created_at");
             const fileUrl = post.getAttribute("file_url");
+            let CDATA_content: string;
+            const isVideo = VIDEO_ENDINGS
+                .map(v => fileUrl?.endsWith(v))
+                .reduce((a, b) => a || b, false);
+            if (isVideo) {
+                const sampleUrl = post.getAttribute("sample_url")!;
+                CDATA_content = `<a href="${fileUrl}">Video
+                <img src="${sampleUrl}" />
+                </a>`;
+            } else {
+                CDATA_content = `<img src="${fileUrl}" />`;
+            }
             return `<entry>
             <title>${id}</title>
             <link href="${encodeXML(postLink)}" />
             <id>${encodeXML(postLink)}</id>
             <updated>${updated.toISOString()}</updated>
             <published>${published}</published>
-            <content type="html"><![CDATA[<img src="${fileUrl}" />]]></content>
+            <content type="html"><![CDATA[${CDATA_content}]]></content>
             </entry>`;
         })
         .join("\n");
