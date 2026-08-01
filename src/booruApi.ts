@@ -25,9 +25,9 @@ export async function generateXml(url: URL, apiCreds: string): Promise<string> {
     const disallowList = tagDisallowList.split(" ").map(t => `-${t}`).join("+");
     if (tags)
     {
-        apiUrl.searchParams.set("tags", tags + disallowList);
+        apiUrl.searchParams.set("tags", tags + "+" + disallowList);
     }
-    apiCreds.split("&").forEach(pair => {
+    apiCreds.split("&").filter(s => s.length > 0).forEach(pair => {
         const splitPair = pair.split("=");
         apiUrl.searchParams.set(splitPair[0], splitPair[1]);
     });
@@ -64,7 +64,10 @@ export async function generateXml(url: URL, apiCreds: string): Promise<string> {
 }
 
 export async function getPostEntries(apiUrl: URL): Promise<string> {
-    const page = await fetch(apiUrl);
+    // ideally the + would be written into the string as is but searchParams.set has other plans
+    const apiString = apiUrl.toString().replaceAll("%2B", "+");
+    logger.debug("Getting posts with the following api url: " + apiString);
+    const page = await fetch(apiString);
     const text = await page.text();
     return parse(text)
         .querySelectorAll("post")
