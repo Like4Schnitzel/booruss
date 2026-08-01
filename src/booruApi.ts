@@ -36,7 +36,7 @@ export async function generateXml(url: URL, apiCreds: string): Promise<string> {
     <feed xmlns="http://www.w3.org/2005/Atom">
     <title>%feedTitle</title>
     <link href="https://${publicHost}/${encodeXML(url.toString())}/rss.xml" rel="self"/>
-    <link href="https://${url.host}"/>
+    <link href="https://${url}"/>
     <id>${encodeXML(url.toString())}</id>
     <author>
       <name>%author</name>
