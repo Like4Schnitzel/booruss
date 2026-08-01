@@ -82,7 +82,9 @@ export async function getPostEntries(apiUrl: URL): Promise<string> {
                 .map(v => fileUrl?.endsWith(v))
                 .reduce((a, b) => a || b, false);
             if (isVideo) {
-                const sampleUrl = post.getAttribute("sample_url")!;
+                let sampleUrl = post.getAttribute("sample_url")!;
+                // on SOME SITES the sample url is WRONG so we need to fix it (replace .mp4 with .jpg)
+                VIDEO_ENDINGS.forEach(v => sampleUrl = sampleUrl.replace(new RegExp(`${v}$`), ".jpg"));
                 CDATA_content = `<a href="${fileUrl}">Video
                 <img src="${sampleUrl}" />
                 </a>`;
