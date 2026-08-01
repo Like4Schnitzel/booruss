@@ -8,6 +8,7 @@ export const logLevel = process.env.LOG_LEVEL || "info";
 export const port = parseInt(process.env.PORT!) || DEFAULT_PORT;
 export const host = process.env.HOST || "127.0.0.1";
 export const publicHost = process.env.PUBLIC_HOST || host;
+export const tagDisallowList = process.env.TAG_DISALLOW_LIST || "";
 
 export type Site = {
     host: string,

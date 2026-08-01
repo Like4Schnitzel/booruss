@@ -18,13 +18,14 @@ const server = createServer((req, res) => {
             }
 
             const url = new URL(site);
-            if (!sites.map(s => s.host).includes(url.host.toLowerCase())) {
+            const siteObject = sites.find(s => s.host === url.host.toLowerCase());
+            if (!siteObject) {
                 res.writeHead(StatusCodes.FORBIDDEN, {"content-type": "text/html"})
                     .write("Support for this site is not enabled on this instance.");
                 return res.end();
             }
 
-            generateXml(url).then((posts) => {
+            generateXml(url, siteObject.apiKey).then((posts) => {
                 res.writeHead(StatusCodes.OK, {
                     "content-type": "application/rss+xml",
                     "content-disposition": "inline; filename=\"rss.xml\""

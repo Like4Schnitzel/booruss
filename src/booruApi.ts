@@ -1,5 +1,5 @@
 import { parse } from "node-html-parser";
-import { publicHost } from "./env";
+import { publicHost, tagDisallowList } from "./env";
 import { MILISECONDS_PER_SECOND } from "./consts";
 import { logger } from "./logger";
 
@@ -9,7 +9,7 @@ function encodeXML(str: string) {
         .replaceAll(">", "&gt;");
 }
 
-export async function generateXml(url: URL): Promise<string> {
+export async function generateXml(url: URL, apiCreds: string): Promise<string> {
     logger.info("Generating XML for url " + url.toString());
     const apiUrl = new URL("https://" + url.host);
     apiUrl.pathname = url.pathname;
@@ -22,10 +22,15 @@ export async function generateXml(url: URL): Promise<string> {
     apiUrl.searchParams.set("limit", "50");
     apiUrl.searchParams.set("q", "index");
     const tags = url.searchParams.get("tags");
+    const disallowList = tagDisallowList.split(" ").map(t => `-${t}`).join("+");
     if (tags)
     {
-        apiUrl.searchParams.set("tags", tags);
+        apiUrl.searchParams.set("tags", tags + disallowList);
     }
+    apiCreds.split("&").forEach(pair => {
+        const splitPair = pair.split("=");
+        apiUrl.searchParams.set(splitPair[0], splitPair[1]);
+    });
 
     let xml = `<?xml version="1.0" encoding="utf-8"?>
     <feed xmlns="http://www.w3.org/2005/Atom">
@@ -43,7 +48,7 @@ export async function generateXml(url: URL): Promise<string> {
     if (url.searchParams.get("page") === "post") {
         let feedTitle = "";
         if (tags) {
-            feedTitle += `${tags} on `;
+            feedTitle += `${tags.replaceAll("+", " ")} on `;
         }
         feedTitle += url.host;
         xml = xml.replaceAll("%feedTitle", feedTitle);
