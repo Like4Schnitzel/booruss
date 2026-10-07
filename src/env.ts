@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+import { drizzle } from "drizzle-orm/libsql";
 config();
 
 const DEFAULT_PORT = 3000;
@@ -26,3 +27,5 @@ for (const key in process.env) {
     });
 }
 export const sites = sitesInBuild;
+
+export const db = drizzle(process.env.DB_FILE_NAME!);

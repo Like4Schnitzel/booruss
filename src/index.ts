@@ -3,10 +3,12 @@ import { host, port, sites } from "./env";
 import { logger } from "./logger";
 import { StatusCodes } from "http-status-codes";
 import { generateXml } from "./booruApi";
+import { getSiteAlias, setupDb } from "./db";
 
 logger.info(`Support enabled for sites: [${sites.map(s => s.host).join(", ")}]`);
+await setupDb();
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
     try {
         if (req.url?.match('^/.+/rss\\.xml$') ||
             req.url?.match('^/.+/rss$') ||
@@ -26,6 +28,10 @@ const server = createServer((req, res) => {
                 res.writeHead(StatusCodes.FORBIDDEN, {"content-type": "text/html"})
                     .write("Support for this site is not enabled on this instance.");
                 return res.end();
+            }
+            const apiHost = await getSiteAlias(url.host.toLowerCase());
+            if (apiHost) {
+                url.hostname = apiHost.api_host;
             }
 
             generateXml(url, siteObject.apiKey).then((posts) => {

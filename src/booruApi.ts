@@ -1,5 +1,5 @@
 import { parse } from "node-html-parser";
-import { publicHost, tagDisallowList } from "./env";
+import { publicHost, Site, tagDisallowList } from "./env";
 import { MILISECONDS_PER_SECOND, VIDEO_ENDINGS } from "./consts";
 import { logger } from "./logger";
 
@@ -101,4 +101,14 @@ export async function getPostEntries(apiUrl: URL): Promise<string> {
             </entry>`;
         })
         .join("\n");
+}
+
+export async function checkApiUrl(site: Site): Promise<string> {
+    const apiGuess = "api." + site.host;
+    try {
+        await fetch("https://" + apiGuess);
+        return apiGuess;
+    } catch {
+        return site.host;
+    }
 }
