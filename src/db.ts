@@ -6,7 +6,7 @@ import { siteAliasTable } from "./schema";
 
 export async function setupDb() {
     try {
-        setAllAliases();
+        await setAllAliases();
     } catch (error) {
         logger.error(error);
     }

@@ -8,6 +8,7 @@ import { getSiteAlias, setupDb } from "./db";
 logger.info(`Support enabled for sites: [${sites.map(s => s.host).join(", ")}]`);
 await setupDb();
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 const server = createServer(async (req, res) => {
     try {
         if (req.url?.match('^/.+/rss\\.xml$') ||
@@ -19,7 +20,8 @@ const server = createServer(async (req, res) => {
             if (!URL.canParse(site)) {
                 res.writeHead(StatusCodes.BAD_REQUEST, {"content-type": "text/html"})
                     .write("Site could not be parsed.");
-                return res.end();
+                res.end();
+                return;
             }
 
             const url = new URL(site);
@@ -27,14 +29,12 @@ const server = createServer(async (req, res) => {
             if (!siteObject) {
                 res.writeHead(StatusCodes.FORBIDDEN, {"content-type": "text/html"})
                     .write("Support for this site is not enabled on this instance.");
-                return res.end();
+                res.end();
+                return;
             }
             const apiHost = await getSiteAlias(url.host.toLowerCase());
-            if (apiHost) {
-                url.hostname = apiHost.api_host;
-            }
 
-            generateXml(url, siteObject.apiKey).then((posts) => {
+            generateXml(url, siteObject.apiKey, apiHost?.api_host || url.host).then((posts) => {
                 res.writeHead(StatusCodes.OK, {
                     "content-type": "application/rss+xml",
                     "content-disposition": "inline; filename=\"rss.xml\""

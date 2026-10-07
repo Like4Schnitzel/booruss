@@ -9,9 +9,9 @@ function encodeXML(str: string) {
         .replaceAll(">", "&gt;");
 }
 
-export async function generateXml(url: URL, apiCreds: string): Promise<string> {
+export async function generateXml(url: URL, apiCreds: string, apiHost: string): Promise<string> {
     logger.info("Generating XML for url " + url.toString());
-    const apiUrl = new URL("https://" + url.host);
+    const apiUrl = new URL("https://" + apiHost);
     apiUrl.pathname = url.pathname;
     apiUrl.searchParams.set("page", "dapi");
     try {
@@ -54,7 +54,7 @@ export async function generateXml(url: URL, apiCreds: string): Promise<string> {
         xml = xml.replaceAll("%feedTitle", feedTitle);
         xml = xml.replaceAll("%author", tags || "");
 
-        xml += await getPostEntries(apiUrl);
+        xml += await getPostEntries(apiUrl, url.host);
     } else {
         throw Error("Error fetching posts.");
     }
@@ -63,7 +63,7 @@ export async function generateXml(url: URL, apiCreds: string): Promise<string> {
     return xml;
 }
 
-export async function getPostEntries(apiUrl: URL): Promise<string> {
+export async function getPostEntries(apiUrl: URL, normalHost: string): Promise<string> {
     // ideally the + would be written into the string as is but searchParams.set has other plans
     const apiString = apiUrl.toString().replaceAll("%2B", "+");
     logger.debug("Getting posts with the following api url: " + apiString);
@@ -73,7 +73,7 @@ export async function getPostEntries(apiUrl: URL): Promise<string> {
         .querySelectorAll("post")
         .map(post => {
             const id = post.getAttribute("id");
-            const postLink = `https://${apiUrl.host}/index.php?page=post&s=view&id=${id}`;
+            const postLink = `https://${normalHost}/index.php?page=post&s=view&id=${id}`;
             const updated = new Date(parseInt(post.getAttribute("change")!) * MILISECONDS_PER_SECOND);
             const published = post.getAttribute("created_at");
             const fileUrl = post.getAttribute("file_url");
